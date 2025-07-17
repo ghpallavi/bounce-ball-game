@@ -2,88 +2,142 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Enhanced Bounce Ball Game</title>
   <style>
-    body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-    canvas { background: #222; border: 4px solid #fff; border-radius: 12px; }
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: sans-serif;
+      color: white;
+    }
+    canvas {
+      background: #222;
+      border: 4px solid #fff;
+      border-radius: 12px;
+    }
+    #controls {
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #218838;
+    }
   </style>
 </head>
 <body>
-<canvas id="game" width="400" height="600"></canvas>
-<audio id="bgm" loop autoplay>
-  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
-</audio>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const bgm = document.getElementById('bgm');
-bgm.volume = 0.5;
+  <div id="controls">
+    <button onclick="startGame()">▶️ Start Game with Music</button>
+  </div>
 
-let ball = { x: 200, y: 300, radius: 10, dx: 4, dy: -4 };
-let paddle = { x: 150, y: 580, width: 100, height: 10 };
-let score = 0;
-let level = 1;
-let speedFactor = 1;
+  <canvas id="game" width="400" height="600"></canvas>
 
-function drawBall() {
-  ctx.beginPath();
-  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
-  ctx.fillStyle = '#00f';
-  ctx.fill();
-  ctx.closePath();
-}
+  <audio id="bgm" loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3" />
+  </audio>
 
-function drawPaddle() {
-  ctx.fillStyle = '#0f0';
-  ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-}
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const bgm = document.getElementById('bgm');
 
-function drawScore() {
-  ctx.fillStyle = '#fff';
-  ctx.font = '16px sans-serif';
-  ctx.fillText('Score: ' + score + ' | Level: ' + level, 10, 20);
-}
+    let ball = { x: 200, y: 300, radius: 10, dx: 2, dy: -3 };
+    let paddle = { x: 150, y: 580, width: 100, height: 10 };
+    let score = 0;
+    let level = 1;
+    let speedFactor = 1;
 
-function levelUp() {
-  level++;
-  speedFactor += 0.5;
-  ball.dx *= 1.1;
-  ball.dy *= 1.1;
-}
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#00f';
+      ctx.fill();
+      ctx.closePath();
+    }
 
-function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawBall();
-  drawPaddle();
-  drawScore();
+    function drawPaddle() {
+      ctx.fillStyle = '#0f0';
+      ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    }
 
-  ball.x += ball.dx;
-  ball.y += ball.dy;
+    function drawText() {
+      ctx.fillStyle = '#fff';
+      ctx.font = '16px sans-serif';
+      ctx.fillText('Score: ' + score, 10, 20);
+      ctx.fillText('Level: ' + level, 320, 20);
+    }
 
-  if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx *= -1;
-  if (ball.y - ball.radius < 0) ball.dy *= -1;
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBall();
+      drawPaddle();
+      drawText();
 
-  if (ball.y + ball.radius >= paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
-    ball.dy *= -1;
-    score++;
-    if (score % 5 === 0) levelUp();
-  }
+      ball.x += ball.dx * speedFactor;
+      ball.y += ball.dy * speedFactor;
 
-  if (ball.y + ball.radius > canvas.height) {
-    alert("Game Over! Your score: " + score);
-    document.location.reload();
-  }
+      // Bounce left/right
+      if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+        ball.dx *= -1;
+      }
 
-  requestAnimationFrame(update);
-}
+      // Bounce top
+      if (ball.y - ball.radius < 0) {
+        ball.dy *= -1;
+      }
 
-document.addEventListener('mousemove', e => {
-  let rect = canvas.getBoundingClientRect();
-  paddle.x = e.clientX - rect.left - paddle.width / 2;
-});
+      // Paddle bounce
+      if (
+        ball.y + ball.radius > paddle.y &&
+        ball.x > paddle.x &&
+        ball.x < paddle.x + paddle.width
+      ) {
+        ball.dy *= -1;
+        score++;
+        if (score % 5 === 0) {
+          level++;
+          speedFactor += 0.2;
+        }
+      }
 
-update();
-</script>
+      // Game over
+      if (ball.y + ball.radius > canvas.height) {
+        alert('Game Over! Final Score: ' + score);
+        document.location.reload();
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    function startGame() {
+      bgm.play();
+      update();
+    }
+
+    // Move paddle with mouse
+    canvas.addEventListener('mousemove', function (e) {
+      const rect = canvas.getBoundingClientRect();
+      let mouseX = e.clientX - rect.left;
+      paddle.x = mouseX - paddle.width / 2;
+
+      if (paddle.x < 0) paddle.x = 0;
+      if (paddle.x + paddle.width > canvas.width)
+        paddle.x = canvas.width - paddle.width;
+    });
+  </script>
 </body>
 </html>
