@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bounce Ball Game</title>
+  <title>Enhanced Bounce Ball Game</title>
   <style>
     body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
     canvas { background: #222; border: 4px solid #fff; border-radius: 12px; }
@@ -11,14 +11,20 @@
 </head>
 <body>
 <canvas id="game" width="400" height="600"></canvas>
-
+<audio id="bgm" loop autoplay>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
+</audio>
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+const bgm = document.getElementById('bgm');
+bgm.volume = 0.5;
 
-let ball = { x: 200, y: 300, radius: 10, dx: 3, dy: -3 };
+let ball = { x: 200, y: 300, radius: 10, dx: 4, dy: -4 };
 let paddle = { x: 150, y: 580, width: 100, height: 10 };
 let score = 0;
+let level = 1;
+let speedFactor = 1;
 
 function drawBall() {
   ctx.beginPath();
@@ -36,7 +42,14 @@ function drawPaddle() {
 function drawScore() {
   ctx.fillStyle = '#fff';
   ctx.font = '16px sans-serif';
-  ctx.fillText('Score: ' + score, 10, 20);
+  ctx.fillText('Score: ' + score + ' | Level: ' + level, 10, 20);
+}
+
+function levelUp() {
+  level++;
+  speedFactor += 0.5;
+  ball.dx *= 1.1;
+  ball.dy *= 1.1;
 }
 
 function update() {
@@ -48,17 +61,15 @@ function update() {
   ball.x += ball.dx;
   ball.y += ball.dy;
 
-  // Wall collisions
   if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx *= -1;
   if (ball.y - ball.radius < 0) ball.dy *= -1;
 
-  // Paddle collision
   if (ball.y + ball.radius >= paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
     ball.dy *= -1;
     score++;
+    if (score % 5 === 0) levelUp();
   }
 
-  // Missed the paddle
   if (ball.y + ball.radius > canvas.height) {
     alert("Game Over! Your score: " + score);
     document.location.reload();
@@ -67,7 +78,6 @@ function update() {
   requestAnimationFrame(update);
 }
 
-// Paddle control
 document.addEventListener('mousemove', e => {
   let rect = canvas.getBoundingClientRect();
   paddle.x = e.clientX - rect.left - paddle.width / 2;
