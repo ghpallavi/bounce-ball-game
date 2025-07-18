@@ -38,6 +38,3 @@ Clone or fork this repository to explore the game logic or customize it further.
 git clone https://github.com/ghpallavi/bounce-ball-game.git
 
 
-## 📚 Note
-
-This project was created as a **personal learning exercise** to explore basic game logic, canvas rendering, and GitHub Pages deployment.
